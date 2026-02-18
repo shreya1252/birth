@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Countdown 🌙</title>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Georgia', serif;
+    text-align: center;
+    color: white;
+    background: radial-gradient(circle at top, #1a1a2e, #16213e, #0f3460);
+    overflow-x: hidden;
+}
+
+/* Glow */
+body::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 30% 30%, rgba(255,120,150,0.15), transparent 40%),
+        radial-gradient(circle at 70% 70%, rgba(255,180,200,0.12), transparent 40%);
+    animation: glowMove 8s ease-in-out infinite alternate;
+    z-index: -1;
+}
+
+@keyframes glowMove {
+    0% { transform: translateY(-10px); }
+    100% { transform: translateY(10px); }
+}
+
+h1 {
+    margin-top: 40px;
+    font-size: 40px;
+}
+
+#countdown {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.card {
+    width: 80%;
+    margin: 25px auto;
+    padding: 25px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 0 40px rgba(255,150,200,0.3);
+}
+
+.quizBox {
+    margin-top: 20px;
+}
+
+button.option {
+    display: block;
+    width: 80%;
+    margin: 8px auto;
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    transition: 0.3s;
+}
+
+button.option:hover {
+    background: rgba(255,150,200,0.4);
+    transform: scale(1.05);
+}
+
+.response {
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+/* Birthday popup */
+#birthdayPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(20,20,40,0.95);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 60px pink;
+    font-size: 22px;
+    z-index: 1000;
+}
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<h1 id="title">Counting Down To Feb 25 🎉</h1>
+<div id="countdown"></div>
+
+<div class="card" id="dailyMessage"></div>
+<div id="quizContainer"></div>
+
+<div id="birthdayPopup">
+🎂 HAPPY BIRTHDAY Mr Ram 🎂<br><br>
+Today is fully yours.<br>
+May this year bring clarity, wins, growth —<br>
+and moments that genuinely make you smile.<br><br>
+You deserve good things. Always. I just wish uh always be happy 
+</div>
+
+<canvas id="fireworks"></canvas>
+
+<script>
+const now = new Date();
+const year = now.getFullYear();
+const startDate = new Date(year,1,18);
+const birthday = new Date(year,1,25);
+
+if(now > birthday){
+birthday.setFullYear(year+1);
+startDate.setFullYear(year+1);
+}
+
+const diff = Math.floor((now-startDate)/(1000*60*60*24));
+
+const messages = [
+`Day 1 🌤
+
+It’s kind of strange how someone I’ve never met
+ended up becoming someone I talk to almost every day.
+
+Not complaining though.
+Some surprises are actually good ones.`,
+
+`Day 2 🌿
+
+You know what I like about us?
+There’s no pressure.
+No forced energy.
+
+Just conversations that somehow feel easy.
+That’s rare.`,
+
+`Day 3 ✨
+
+I still think it’s funny how this started.
+Random chats.
+Random jokes.
+
+And now it feels… familiar.
+Comfortable.
+Maybe a little important.`,
+
+`Day 4 🌙
+
+Distance is weird.
+It keeps people apart physically,
+but sometimes it makes conversations deeper.
+
+And ours?
+Yeah… they’re not surface level.`,
+
+`Day 5 ☀
+
+You have this way of replying
+that makes me wait for the next message.
+
+I won’t admit that out loud though.`,
+
+`Day 6 🎯
+
+It’s interesting how you became
+part of my routine without trying.
+
+Not everyone gets that privilege.`,
+
+`Day 7 👀
+
+Tomorrow’s your day.
+
+And even if I’m not there in person,
+just know someone somewhere
+is genuinely smiling because it’s yours.`
+];
+
+
+
+if(diff >=0 && diff <7){
+document.getElementById("dailyMessage").innerText = messages[diff];
+loadDayQuizzes(diff);
+}
+else if(now.toDateString() === birthday.toDateString()){
+document.getElementById("dailyMessage").innerHTML = "🎉 It’s your day.";
+document.getElementById("quizContainer").style.display="none";
+document.getElementById("birthdayPopup").style.display="block";
+launchFireworks(1200);
+}
+else{
+document.getElementById("dailyMessage").innerText="Something special is coming...";
+}
+
+/* 3 quizzes per day */
+function loadDayQuizzes(day){
+const container = document.getElementById("quizContainer");
+container.innerHTML="";
+
+for(let i=1;i<=3;i++){
+let quizBox=document.createElement("div");
+quizBox.className="card quizBox";
+
+let question=document.createElement("div");
+question.innerText=`Question ${i}: Your hidden trait?`;
+quizBox.appendChild(question);
+
+["Calm","Funny","Overthinker"].forEach(option=>{
+let btn=document.createElement("button");
+btn.className="option";
+btn.innerText=option;
+btn.onclick=function(){
+let response=document.createElement("div");
+response.className="response";
+if(option==="Calm") response.innerText="You act unbothered… but you observe everything 😌";
+if(option==="Funny") response.innerText="Humor is your defense mechanism and weapon.";
+if(option==="Overthinker") response.innerText="That brain of yours deserves overtime pay.";
+quizBox.appendChild(response);
+};
+quizBox.appendChild(btn);
+});
+
+container.appendChild(quizBox);
+}
+}
+
+/* Countdown */
+setInterval(()=>{
+let distance=birthday-now;
+let d=Math.floor(distance/(1000*60*60*24));
+let h=Math.floor((distance%(1000*60*60*24))/(1000*60*60));
+let m=Math.floor((distance%(1000*60*60))/(1000*60));
+let s=Math.floor((distance%(1000*60))/1000);
+document.getElementById("countdown").innerHTML=`⏳ ${d}d ${h}h ${m}m ${s}s`;
+},1000);
+
+/* Fireworks */
+const canvas=document.getElementById("fireworks");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+function launchFireworks(speed){
+setInterval(()=>{
+let x=Math.random()*canvas.width;
+let y=Math.random()*canvas.height/2;
+for(let i=0;i<40;i++){
+ctx.beginPath();
+ctx.arc(x,y,2,0,2*Math.PI);
+ctx.fillStyle="pink";
+ctx.fill();
+}
+},speed);
+}
+launchFireworks(3000);
+</script>
+
+</body>
+</html>
